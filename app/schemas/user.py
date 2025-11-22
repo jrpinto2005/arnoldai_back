@@ -1,53 +1,20 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-from datetime import datetime
+from pydantic import BaseModel
+
 
 class UserBase(BaseModel):
-    email: EmailStr
-    username: str
-    full_name: Optional[str] = None
+    name: str
+    goal: str | None = None
+    experience_level: str | None = None
+    weight_kg: float | None = None
+    height_cm: float | None = None
+
 
 class UserCreate(UserBase):
-    password: str
+    pass
 
-class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    age: Optional[int] = None
-    height: Optional[float] = None
-    weight: Optional[float] = None
-    fitness_goal: Optional[str] = None
-    activity_level: Optional[str] = None
 
-class User(UserBase):
+class UserOut(UserBase):
     id: int
-    age: Optional[int]
-    height: Optional[float]
-    weight: Optional[float]
-    fitness_goal: Optional[str]
-    activity_level: Optional[str]
-    is_active: bool
-    created_at: datetime
-    updated_at: Optional[datetime]
 
     class Config:
         from_attributes = True
-
-class UserProfile(BaseModel):
-    id: int
-    username: str
-    full_name: Optional[str]
-    age: Optional[int]
-    height: Optional[float]
-    weight: Optional[float]
-    fitness_goal: Optional[str]
-    activity_level: Optional[str]
-    
-    class Config:
-        from_attributes = True
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    username: Optional[str] = None

@@ -1,1 +1,1 @@
-# Routes package
+from . import chat, sessions  # noqa

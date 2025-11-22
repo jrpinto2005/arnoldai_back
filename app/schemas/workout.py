@@ -1,86 +1,66 @@
 from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime
+from typing import Optional, List
+from app.db.models import SessionStatus
+
 
 class ExerciseBase(BaseModel):
     name: str
-    exercise_type: Optional[str] = None
-    sets: Optional[int] = None
-    reps: Optional[int] = None
-    weight: Optional[float] = None
-    duration_seconds: Optional[int] = None
-    rest_seconds: Optional[int] = None
-    notes: Optional[str] = None
-    order_in_workout: Optional[int] = None
+    muscle_group: str
+    equipment: Optional[str] = None
+    level: Optional[str] = None
 
-class ExerciseCreate(ExerciseBase):
+
+class ExerciseOut(ExerciseBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class WorkoutSetBase(BaseModel):
+    exercise_id: int
+    exercise_order: int
+    set_number: int
+    target_reps: int
+    target_weight: Optional[float] = None
+
+
+class WorkoutSetCreate(WorkoutSetBase):
     pass
 
-class ExerciseUpdate(BaseModel):
-    name: Optional[str] = None
-    exercise_type: Optional[str] = None
-    sets: Optional[int] = None
-    reps: Optional[int] = None
-    weight: Optional[float] = None
-    duration_seconds: Optional[int] = None
-    rest_seconds: Optional[int] = None
-    notes: Optional[str] = None
-    order_in_workout: Optional[int] = None
-    is_completed: Optional[bool] = None
 
-class Exercise(ExerciseBase):
+class WorkoutSetOut(WorkoutSetBase):
     id: int
-    workout_session_id: int
-    is_completed: bool
+    actual_reps: Optional[int] = None
+    actual_weight: Optional[float] = None
+    rpe: Optional[float] = None
+    comment: Optional[str] = None
+    auto_adjusted: bool
 
     class Config:
         from_attributes = True
 
-class WorkoutSessionBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-    workout_type: Optional[str] = None
-    difficulty_level: Optional[str] = None
-    scheduled_date: Optional[datetime] = None
 
-class WorkoutSessionCreate(WorkoutSessionBase):
-    exercises: List[ExerciseCreate] = []
+class WorkoutSessionCreate(BaseModel):
+    user_id: int
+    fatigue_before: Optional[float] = None
+    sleep_hours_last_night: Optional[float] = None
+    notes: Optional[str] = None
+    # aquí podrías recibir directamente los sets sugeridos por el planner
+    sets: List[WorkoutSetCreate]
 
-class WorkoutSessionUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    workout_type: Optional[str] = None
-    difficulty_level: Optional[str] = None
-    duration_minutes: Optional[int] = None
-    calories_burned: Optional[float] = None
-    status: Optional[str] = None
-    scheduled_date: Optional[datetime] = None
 
-class WorkoutSession(WorkoutSessionBase):
+class WorkoutSessionOut(BaseModel):
     id: int
     user_id: int
-    duration_minutes: Optional[int]
-    calories_burned: Optional[float]
-    status: str
-    started_at: Optional[datetime]
-    completed_at: Optional[datetime]
-    created_at: datetime
-    exercises: List[Exercise] = []
+    started_at: datetime
+    finished_at: Optional[datetime]
+    status: SessionStatus
+    fatigue_before: Optional[float]
+    sleep_hours_last_night: Optional[float]
+    notes: Optional[str]
+    sets: List[WorkoutSetOut]
 
     class Config:
         from_attributes = True
-
-class WorkoutPlan(BaseModel):
-    """Generated workout plan from AI"""
-    name: str
-    description: str
-    workout_type: str
-    difficulty_level: str
-    estimated_duration: int
-    exercises: List[ExerciseCreate]
-    
-class WorkoutRecommendation(BaseModel):
-    """AI workout recommendation"""
-    plan: WorkoutPlan
-    rationale: str
-    tips: List[str]
