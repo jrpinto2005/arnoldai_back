@@ -3,9 +3,11 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.db.session import Base, engine
-from app.api.routes import chat, sessions, setup, tts
+from app.db.session import Base, SessionLocal, engine
+from app.api.routes import chat, sessions, setup, tts, metrics, users
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.initial_data import create_demo_data
 
 # 👉 Esto crea todas las tablas en la BD
 Base.metadata.create_all(bind=engine)
@@ -19,6 +21,16 @@ origins = [
     # añade aquí la IP de tu máquina en la red local si pruebas en dispositivo físico
     "*"
 ]
+def init_demo_data() -> None:
+    """
+    Inicializa los datos de demostración.
+    """
+    db = SessionLocal()
+    try:
+        create_demo_data(db)
+    finally:
+        db.close()
+init_demo_data()
 
 app = FastAPI(title=settings.PROJECT_NAME)
 app.add_middleware(
@@ -35,9 +47,12 @@ def read_root():
     return {"message": "Arnold Coach API is running"}
 
 
+
 app.mount("/media", StaticFiles(directory=settings.MEDIA_DIR), name="media")
 
 app.include_router(chat.router)
 app.include_router(sessions.router)
 app.include_router(setup.router)
 app.include_router(tts.router)
+app.include_router(metrics.router)
+app.include_router(users.router)
