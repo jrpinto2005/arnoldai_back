@@ -1,1 +1,1 @@
-from . import chat, sessions  # noqa
+from . import chat, sessions, setup  # noqa
